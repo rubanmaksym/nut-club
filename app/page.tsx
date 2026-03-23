@@ -606,11 +606,7 @@ export default function Home() {
           <div className="sticky-orderbar-total">{total} грн</div>
         </div>
 		
-		<a href="tel:+380660653477" className="call-btn">
-		  📞
-		</a>
-
-        <button
+	    <button
           className="sticky-orderbar-btn"
           onClick={() => {
             const el = document.getElementById("checkout");
@@ -620,6 +616,10 @@ export default function Home() {
           Замовити
         </button>
       </div>
+	  
+	  <a href="tel:+380660653477" className="call-btn">
+	    📞
+	  </a>	
 	  
     </main>
   );

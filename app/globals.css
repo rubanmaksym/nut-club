@@ -1052,3 +1052,19 @@ body {
   font-size: 14px;
 }
 
+.call-btn {
+  position: fixed;
+  right: 16px;
+  bottom: 120px;
+  width: 70px;
+  height: 70px;
+  border-radius: 999px;
+  background: red;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  text-decoration: none;
+  z-index: 9999;
+}
