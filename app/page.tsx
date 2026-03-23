@@ -39,6 +39,7 @@ export default function Home() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [orderSuccess, setOrderSuccess] = useState(false);
 
   useEffect(() => {
     async function loadCatalog() {
@@ -166,6 +167,7 @@ export default function Home() {
     }
     
 	setCart([]);
+	setOrderSuccess(true);
 
     const nameInput = document.getElementById("name") as HTMLInputElement | null;
     const phoneInput = document.getElementById("phone") as HTMLInputElement | null;
@@ -177,7 +179,7 @@ export default function Home() {
     if (addressInput) addressInput.value = "";
     if (commentInput) commentInput.value = "";
 	
-    alert("Замовлення відправлено");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   return (
@@ -392,6 +394,14 @@ export default function Home() {
 
         <section className="checkout-card" id="checkout">
           <h2 className="checkout-title">Оформлення замовлення</h2>
+		  {orderSuccess ? (
+            <div className="success-box">
+              <div className="success-title">Дякуємо за замовлення!</div>
+              <div className="success-text">
+                Ми отримали вашу заявку та зв’яжемося з вами найближчим часом.
+              </div>
+            </div>
+          ) : null}
 
           <div className="checkout-grid">
             <input id="name" placeholder="Ім'я" className="checkout-input" />
@@ -568,6 +578,9 @@ export default function Home() {
 		  <div className="contacts-note">
 		    Для швидкого замовлення залиште заявку на сайті — ми зв’яжемося з вами для підтвердження.
 		  </div>
+		  
+           
+          
 	    </div>
 	  </section>
 
@@ -592,6 +605,10 @@ export default function Home() {
           <div className="sticky-orderbar-top">До сплати</div>
           <div className="sticky-orderbar-total">{total} грн</div>
         </div>
+		
+		<a href="tel:+380660653477" className="call-btn">
+		  📞
+		</a>
 
         <button
           className="sticky-orderbar-btn"
@@ -603,6 +620,7 @@ export default function Home() {
           Замовити
         </button>
       </div>
+	  
     </main>
   );
 }
