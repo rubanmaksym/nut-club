@@ -20,6 +20,7 @@ type Product = {
   category: Category;
   price100: number;
   image: string;
+  description?: string;
 };
 
 function priceForPack(price100: number, grams: number) {
@@ -35,7 +36,7 @@ function discountPercent(subtotal: number) {
 
 export default function Home() {
   const [category, setCategory] = useState<Category>("nuts");
-  const [selectedPack, setSelectedPack] = useState<number>(SHOP.packs[0]);
+  const [selectedPacks, setSelectedPacks] = useState<Record<number, number>>({});
   const [cart, setCart] = useState<CartItem[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,28 +63,29 @@ export default function Home() {
   }, [products, category]);
 
   function add(product: Product) {
-    const key = `${product.id}_${selectedPack}`;
-    const exist = cart.find((i) => `${i.id}_${i.pack}` === key);
+	const currentPack = selectedPacks[product.id] || 100;
+	const key = `${product.id}_${currentPack}`;
+	const exist = cart.find((i) => `${i.id}_${i.pack}` === key);
 
-    if (exist) {
+	if (exist) {
       setCart(
-        cart.map((i) =>
-          `${i.id}_${i.pack}` === key ? { ...i, qty: i.qty + 1 } : i
-        )
-      );
-    } else {
-      setCart([
-        ...cart,
-        {
-          id: product.id,
-          name: product.name,
-          category: product.category,
-          price100: product.price100,
-          pack: selectedPack,
-          qty: 1,
-        },
-      ]);
-    }
+		cart.map((i) =>
+		  `${i.id}_${i.pack}` === key ? { ...i, qty: i.qty + 1 } : i
+		)
+	  );
+	} else {
+	  setCart([
+		...cart,
+		{
+		  id: product.id,
+		  name: product.name,
+		  category: product.category,
+		  price100: product.price100,
+		  pack: currentPack,
+		  qty: 1,
+		},
+	  ]);
+	}
   }
 
   function remove(item: CartItem) {
@@ -271,21 +273,6 @@ export default function Home() {
             </button>
           </div>
 
-          <div className="packs-row">
-            <div className="packs-label">Фасовка</div>
-
-            <div className="packs-list">
-              {SHOP.packs.map((g) => (
-                <button
-                  key={g}
-                  onClick={() => setSelectedPack(g)}
-                  className={`pack-chip ${selectedPack === g ? "active" : ""}`}
-                >
-                  {g}г
-                </button>
-              ))}
-            </div>
-          </div>
         </section>
 
         {loading ? (
@@ -294,8 +281,9 @@ export default function Home() {
 
         <section className="catalog-grid">
           {visible.map((p) => {
-            const packPrice = priceForPack(p.price100, selectedPack);
-            const inCart = cart.find((i) => i.id === p.id && i.pack === selectedPack);
+            const currentPack = selectedPacks[p.id] || 100;
+			const packPrice = priceForPack(p.price100, currentPack);
+			const inCart = cart.find((i) => i.id === p.id && i.pack === currentPack);
 
             return (
               <article key={p.id} className="product-card">
@@ -315,11 +303,33 @@ export default function Home() {
                   </div>
 
                   <h3 className="product-title">{p.name}</h3>
+				  <div className="product-desc">{p.description}</div>
 				  
-				  									  
+				  <div className="card-packs">
+					{SHOP.packs.map((g) => {
+					  const currentPack = selectedPacks[p.id] || 100;
+
+					  return (
+						<button
+						  key={g}
+						  onClick={() =>
+							setSelectedPacks((prev) => ({
+							  ...prev,
+							  [p.id]: g,
+							}))
+						  }
+						  className={`card-pack-btn ${currentPack === g ? "active" : ""}`}
+						  type="button"
+						>
+						  {g}г
+						</button>
+					  );
+					})}
+				  </div>
+                  
                   <div className="product-price-main">{packPrice} грн</div>
                   <div className="product-price-sub">
-                    {selectedPack}г · {p.price100} грн / 100г
+                    {currentPack}г · {p.price100} грн / 100г
                   </div>
 
                   <div className="product-actions">

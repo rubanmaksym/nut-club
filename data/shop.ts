@@ -2,12 +2,12 @@ export const SHOP = {
   city: "Дніпро",
   currency: "грн",
 
-  packs: [250, 500, 1000], // граммы
+  packs: [100, 250, 500, 1000], // граммы
 
   delivery: {
     fee: 80,
     freeFrom: 1000,
-    note: "Доставка по Дніпру від 800 грн. Від 1000 грн — безкоштовно + 🎁 подарунок (2×25г)."
+    note: "Мінімальний заказ від 400 грн. Від 1000 грн — безкоштовно доставка + 🎁 подарунок (2×25г)."
   },
 
   gift: {
@@ -28,16 +28,18 @@ export const SHOP = {
     { id: 2, name: "Мигдаль смажений", price100: 95, category: "nuts" },
     { id: 3, name: "Фундук сирий", price100: 85, category: "nuts" },
     { id: 4, name: "Фундук смажений", price100: 90, category: "nuts" },
-    { id: 5, name: "Кешью W320", price100: 110, category: "nuts" },
-    { id: 6, name: "Фісташки солоні", price100: 120, category: "nuts" },
-    { id: 7, name: "Грецький горіх", price100: 80, category: "nuts" },
+    { id: 5, name: "Кешью сирий", price100: 110, category: "nuts" },
+	{ id: 6, name: "Кешью смажений", price100: 115, category: "nuts" },
+    { id: 7, name: "Фісташки солоні", price100: 120, category: "nuts" },
+    { id: 8, name: "Волоський горіх очищений", price100: 90, category: "nuts" },
+	{ id: 9, name: "Мікс горіхів", price100: 90, category: "nuts" },
 
     // DRY
     { id: 8, name: "Курага", price100: 70, category: "dry" },
-    { id: 9, name: "Ізюм білий", price100: 60, category: "dry" },
-    { id: 10, name: "Ізюм синій", price100: 60, category: "dry" },
-    { id: 11, name: "Фініки", price100: 65, category: "dry" },
-    { id: 12, name: "Чорнослив", price100: 75, category: "dry" },
-    { id: 13, name: "Інжир", price100: 95, category: "dry" },
+    { id: 9, name: "Родзинки світлі", price100: 65, category: "dry" },
+    { id: 10, name: "Родзинки темні", price100: 65, category: "dry" },
+    { id: 11, name: "Чорнослив", price100: 75, category: "dry" },
+    { id: 12, name: "Інжир сушений", price100: 85, category: "dry" },
+    { id: 13, name: "Фінік", price100: 60, category: "dry" },
   ]
 } as const
