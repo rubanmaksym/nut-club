@@ -435,6 +435,7 @@ body {
   color: #261b13;
 }
 
+
 .product-price-main {
   font-size: 26px;
   line-height: 1;
@@ -1067,4 +1068,12 @@ body {
   font-weight: 900;
   text-decoration: none;
   z-index: 9999;
+}
+
+.honeypot-input {
+  position: absolute !important;
+  left: -9999px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  height: 0 !important;
 }

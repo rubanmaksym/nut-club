@@ -120,11 +120,17 @@ export default function Home() {
   const giftActive = SHOP.gift.enabled && afterDiscount >= SHOP.gift.from;
 
   async function sendOrder() {
+	setOrderSuccess(false);
     const name = (document.getElementById("name") as HTMLInputElement).value;
     const phone = (document.getElementById("phone") as HTMLInputElement).value;
     const address = (document.getElementById("address") as HTMLInputElement).value;
     const comment = (document.getElementById("comment") as HTMLTextAreaElement).value;
-
+	const company = (document.getElementById("company") as HTMLInputElement)?.value || "";
+    
+	if (company.trim()) {
+      return;
+    }
+	
     if (!phone) {
       alert("Вкажіть телефон");
       return;
@@ -309,7 +315,8 @@ export default function Home() {
                   </div>
 
                   <h3 className="product-title">{p.name}</h3>
-
+				  
+				  									  
                   <div className="product-price-main">{packPrice} грн</div>
                   <div className="product-price-sub">
                     {selectedPack}г · {p.price100} грн / 100г
@@ -412,10 +419,19 @@ export default function Home() {
               className="checkout-input"
             />
             <textarea
-              id="comment"
+			  id="comment"
               placeholder="Коментар до замовлення"
               className="checkout-input checkout-textarea"
             />
+			
+			  <input
+			    id="company"
+				name="company"
+				type="text"
+				autoComplete="off"
+				tabIndex={-1}
+				className="Honeypot-input"
+			  />
 
             <button onClick={sendOrder} className="checkout-submit" type="button">
               Оформити замовлення
