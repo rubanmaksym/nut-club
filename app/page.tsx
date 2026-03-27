@@ -233,7 +233,7 @@ export default function Home() {
             <div className="topbar-city">{SHOP.city}</div>
             <h1 className="topbar-title">Горіховий клуб</h1>
             <p className="topbar-subtitle">
-              Свіжі горіхи та сухофрукти з доставкою по місту
+              Свіжі горіхи та сухофрукти з доставкою по місту та Україні
             </p>
           </div>
 
@@ -250,7 +250,7 @@ export default function Home() {
 
 				<div className="hero-badge-text">
 				  <span className="hero-kicker">Сьогодні вигідно</span>
-				  <div className="hero-mini">Доставка по Дніпру</div>
+				  <div className="hero-mini">Доставка по Дніпру та Україні</div>
 				</div>
 			  </div>
 
