@@ -128,13 +128,41 @@ export default function Home() {
     const address = (document.getElementById("address") as HTMLInputElement).value;
     const comment = (document.getElementById("comment") as HTMLTextAreaElement).value;
 	const company = (document.getElementById("company") as HTMLInputElement)?.value || "";
+	
+    const cleanName = name.trim();
+	const cleanPhone = phone.trim();
+	const cleanAddress = address.trim();
+
+	const phoneDigits = cleanPhone.replace(/\D/g, "");
+	const addressHasLetters = /[A-Za-zА-Яа-яІіЇїЄєҐґ]/.test(cleanAddress);
+	const addressHasNumbers = /\d/.test(cleanAddress);
+
+	if (cleanName.length < 2) {
+	  alert("Вкажіть коректне ім'я");
+	  return;
+	}
+
+	if (!/^[A-Za-zА-Яа-яІіЇїЄєҐґ'`\-\s]+$/.test(cleanName)) {
+	  alert("Ім'я містить недопустимі символи");
+	  return;
+	}
+
+	if (!/^(0\d{9}|380\d{9})$/.test(phoneDigits)) {
+	  alert("Вкажіть коректний номер телефону");
+	  return;
+	}
+
+	if (cleanAddress.length < 5) {
+	  alert("Вкажіть коректну адресу доставки");
+	  return;
+	}
+
+	if (!addressHasLetters || !addressHasNumbers) {
+	  alert("Адреса має містити вулицю та номер будинку");
+	  return;
+	}
     
 	if (company.trim()) {
-      return;
-    }
-	
-    if (!phone) {
-      alert("Вкажіть телефон");
       return;
     }
 
@@ -357,7 +385,7 @@ export default function Home() {
           })}
         </section>
 
-        <section className="summary-card">
+        <section className="summary-card" id="summary">
           <div className="summary-head">
             <h2>Кошик</h2>
             <span>{cart.reduce((s, i) => s + i.qty, 0)} шт.</span>
@@ -383,6 +411,13 @@ export default function Home() {
               ))}
             </div>
           )}
+		  
+		  {subtotal > 0 && subtotal < SHOP.delivery.freeFrom ? (
+		    <div className="free-delivery-note">
+			  До безкоштовної доставки залишилось{" "}
+			  <b>{SHOP.delivery.freeFrom - subtotal} грн</b>
+			</div>
+          ) : null}			
 
           <div className="summary-totals">
             <div className="summary-line">
@@ -465,13 +500,13 @@ export default function Home() {
 		    <div className="benefit-card">
 			  <div className="benefit-icon">🚚</div>
 			  <h3>Швидка доставка</h3>
-			  <p>Доставка по Дніпру. Від 1000 грн — безкоштовно, а також діє подарунок до замовлення.</p>
+			  <p>Доставка по Україні Нова Пошта. Від 1000 грн — безкоштовно.</p>
 		    </div>
 
 		    <div className="benefit-card">
 			  <div className="benefit-icon">⚖️</div>
 			  <h3>Зручна фасовка</h3>
-			  <p>Доступні фасовки 250г, 500г і 1000г — легко замовити потрібний обсяг без зайвих дзвінків.</p>
+			  <p>Доступні фасовки 100г, 250г, 500г і 1000г — легко замовити потрібний обсяг без зайвих дзвінків.</p>
 		    </div>
 
 		    <div className="benefit-card">
@@ -497,7 +532,7 @@ export default function Home() {
 
 		    <p>
 			  Наш підхід простий: зрозумілий каталог, чесна фасовка, швидке оформлення замовлення
-			  та доставка по місту. Ви обираєте потрібні позиції, а ми оперативно обробляємо замовлення.
+			  та доставка по Україні. Ви обираєте потрібні позиції, а ми оперативно обробляємо замовлення.
 		    </p>
 		  </div>
 	    </div>
@@ -512,7 +547,7 @@ export default function Home() {
 		    <div className="info-card">
 			  <h3>Доставка</h3>
 			  <ul className="info-list">
-			    <li>Доставка по Дніпру</li>
+			    <li>Доставка по Україні</li>
 			    <li>Вартість доставки — {SHOP.delivery.fee} грн</li>
 			    <li>Безкоштовна доставка від {SHOP.delivery.freeFrom} грн</li>
 			    <li>Після оформлення ми зв’язуємось для підтвердження замовлення</li>
@@ -525,7 +560,7 @@ export default function Home() {
 			    <li>Оплата після підтвердження замовлення</li>
 			    <li>Уточнення способу оплати під час зв’язку з клієнтом</li>
 			    <li>Знижки рахуються автоматично від суми кошика</li>
-			    <li>Подарунок додається при замовленні від {SHOP.gift.from} грн</li>
+			    
 			  </ul>
 		    </div>
 		  </div>
@@ -614,7 +649,7 @@ export default function Home() {
 	    <div className="site-footer-inner">
 		  <div>
 		    <div className="footer-brand">Горіховий клуб</div>
-		    <div className="footer-text">Свіжі горіхи та сухофрукти з доставкою по Дніпру</div>
+		    <div className="footer-text">Свіжі горіхи та сухофрукти з доставкою по Україні</div>
 		  </div>
 
 		  <div className="footer-links">
@@ -628,14 +663,14 @@ export default function Home() {
 	  
       <div className="sticky-orderbar">
         <div>
-          <div className="sticky-orderbar-top">До сплати</div>
-          <div className="sticky-orderbar-total">{total} грн</div>
+          <div className="sticky-orderbar-top">У кошику</div>
+          <div className="sticky-orderbar-total">{subtotal} грн</div>
         </div>
 		
 	    <button
           className="sticky-orderbar-btn"
           onClick={() => {
-            const el = document.getElementById("checkout");
+            const el = document.getElementById("summary");
             el?.scrollIntoView({ behavior: "smooth" });
           }}
         >
@@ -645,7 +680,15 @@ export default function Home() {
 	  
 	  <a href="tel:+380660653477" className="call-btn">
 	    📞
-	  </a>	
+	  </a>
+
+      <button
+		className="scroll-top-btn"
+		onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+		type="button"
+	  >
+	    ↑
+	  </button>
 	  
     </main>
   );

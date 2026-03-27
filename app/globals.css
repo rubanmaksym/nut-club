@@ -591,6 +591,17 @@ body {
   white-space: nowrap;
 }
 
+.free-delivery-note {
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #fff3d9, #ffe8b8);
+  color: #8a5a00;
+  font-weight: 800;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
 .summary-totals {
   border-top: 1px solid #eadccb;
   padding-top: 14px;
@@ -1084,21 +1095,38 @@ body {
   font-size: 14px;
 }
 
+.scroll-top-btn,
 .call-btn {
   position: fixed;
-  right: 16px;
-  bottom: 120px;
-  width: 70px;
-  height: 70px;
+  right: 22px;
+  width: 52px;
+  height: 52px;
   border-radius: 999px;
-  background: red;
-  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.25);
+  color: #2d241d;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 900;
   text-decoration: none;
-  z-index: 9999;
+  font-size: 22px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 1000;
+  box-shadow: 0 10px 24px rgba(44, 31, 18, 0.12);
+}
+
+.scroll-top-btn {
+  bottom: 290px;
+}  
+
+.call-btn {
+  bottom: 225px;
+}  
+
+.scroll-top-btn:active,
+.coll-btn:active {
+	transform: scale(0.96);
 }
 
 .honeypot-input {
@@ -1108,3 +1136,4 @@ body {
   pointer-events: none !important;
   height: 0 !important;
 }
+
