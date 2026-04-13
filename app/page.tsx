@@ -38,10 +38,25 @@ export default function Home() {
   const [category, setCategory] = useState<Category>("nuts");
   const [selectedPacks, setSelectedPacks] = useState<Record<number, number>>({});
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [showFloating, setShowFloating] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [orderSuccess, setOrderSuccess] = useState(false);
+  
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        setShowFloating(true);
+      } else {
+        setShowFloating(false);
+      }
+    };
 
+    window.addEventListener("scroll", handleScroll);
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+  
   useEffect(() => {
     async function loadCatalog() {
       try {
@@ -63,14 +78,13 @@ export default function Home() {
   }, [products, category]);
 
   function add(product: Product) {
-	const currentPack = selectedPacks[product.id] || 100;
-	const key = `${product.id}_${currentPack}`;
-	const exist = cart.find((i) => `${i.id}_${i.pack}` === key);
+	const step = selectedPacks[product.id] || 50;
+	const exist = cart.find((i) => i.id === product.id);
 
 	if (exist) {
       setCart(
 		cart.map((i) =>
-		  `${i.id}_${i.pack}` === key ? { ...i, qty: i.qty + 1 } : i
+		  i.id === product.id ? { ...i, pack: i.pack + step } : i
 		)
 	  );
 	} else {
@@ -81,7 +95,7 @@ export default function Home() {
 		  name: product.name,
 		  category: product.category,
 		  price100: product.price100,
-		  pack: currentPack,
+		  pack: step,
 		  qty: 1,
 		},
 	  ]);
@@ -89,16 +103,16 @@ export default function Home() {
   }
 
   function remove(item: CartItem) {
-    const key = `${item.id}_${item.pack}`;
-    const exist = cart.find((i) => `${i.id}_${i.pack}` === key);
+    const step = selectedPacks[item.id] || 50;
+    const exist = cart.find((i) => i.id === item.id);
     if (!exist) return;
 
-    if (exist.qty === 1) {
-      setCart(cart.filter((i) => `${i.id}_${i.pack}` !== key));
+    if (exist.pack <= step) {
+      setCart(cart.filter((i) => i.id !== item.id));
     } else {
       setCart(
         cart.map((i) =>
-          `${i.id}_${i.pack}` === key ? { ...i, qty: i.qty - 1 } : i
+          i.id === item.id ? { ...i, pack: i.pack - step } : i
         )
       );
     }
@@ -125,12 +139,14 @@ export default function Home() {
 	setOrderSuccess(false);
     const name = (document.getElementById("name") as HTMLInputElement).value;
     const phone = (document.getElementById("phone") as HTMLInputElement).value;
+	const npOffice = (document.getElementById("npOffice") as HTMLInputElement)?.value || "";
     const address = (document.getElementById("address") as HTMLInputElement).value;
     const comment = (document.getElementById("comment") as HTMLTextAreaElement).value;
 	const company = (document.getElementById("company") as HTMLInputElement)?.value || "";
 	
     const cleanName = name.trim();
 	const cleanPhone = phone.trim();
+	const cleanNpOffice = npOffice.trim();
 	const cleanAddress = address.trim();
 
 	const phoneDigits = cleanPhone.replace(/\D/g, "");
@@ -149,6 +165,11 @@ export default function Home() {
 
 	if (!/^(0\d{9}|380\d{9})$/.test(phoneDigits)) {
 	  alert("Вкажіть коректний номер телефону");
+	  return;
+	}
+	
+	if (cleanNpOffice.length < 2) {
+	  alert("Вкажіть відділення або поштомат Нової пошти");
 	  return;
 	}
 
@@ -174,6 +195,7 @@ export default function Home() {
     const order = {
       name,
       phone,
+	  npOffice,
       telegram: "",
       delivery_type: "delivery",
       address,
@@ -207,11 +229,13 @@ export default function Home() {
 
     const nameInput = document.getElementById("name") as HTMLInputElement | null;
     const phoneInput = document.getElementById("phone") as HTMLInputElement | null;
+	const npOfficeInput = document.getElementById("npOffice") as HTMLInputElement | null;
     const addressInput = document.getElementById("address") as HTMLInputElement | null;
     const commentInput = document.getElementById("comment") as HTMLTextAreaElement | null;
 
     if (nameInput) nameInput.value = "";
     if (phoneInput) phoneInput.value = "";
+	if (npOfficeInput) npOfficeInput.value = "";
     if (addressInput) addressInput.value = "";
     if (commentInput) commentInput.value = "";
 	
@@ -224,6 +248,7 @@ export default function Home() {
         <header className="topbar">
 		<nav className="quick-nav">
           <a href="#catalog">Каталог</a>
+		  <a href="#how-order">Як замовити</a>
           <a href="#benefits">Переваги</a>
           <a href="#about">Про нас</a>
           <a href="#delivery">Доставка</a>
@@ -233,7 +258,7 @@ export default function Home() {
             <div className="topbar-city">{SHOP.city}</div>
             <h1 className="topbar-title">Горіховий клуб</h1>
             <p className="topbar-subtitle">
-              Свіжі горіхи та сухофрукти з доставкою по місту та Україні
+              Свіжі горіхи та сухофрукти з доставкою по Україні
             </p>
           </div>
 
@@ -250,12 +275,12 @@ export default function Home() {
 
 				<div className="hero-badge-text">
 				  <span className="hero-kicker">Сьогодні вигідно</span>
-				  <div className="hero-mini">Доставка по Дніпру та Україні</div>
+				  <div className="hero-mini">Доставка "Новою поштою" по Україні</div>
 				</div>
 			  </div>
 
 			  <div className="hero-text">
-				<h2>Натуральні горіхи та сухофрукти для дому, дітей та спорту</h2>
+				<h2>Чисті горіхи та сухофрукти для здорового харчування</h2>
 				<p>{SHOP.delivery.note}</p>
 			  </div>
 
@@ -302,6 +327,33 @@ export default function Home() {
           </div>
 
         </section>
+		
+		<section className="how-order-section" id="how-order">
+		  <div className="info-block">
+			<div className="section-kicker">Як це працює</div>
+			<h2 className="section-title">Як замовити</h2>
+
+			<div className="how-order-grid">
+			  <div className="how-order-card">
+				<div className="how-order-step">1</div>
+				<h3>Оберіть товар</h3>
+				<p>Гортайте каталог і додавайте потрібні позиції до кошика.</p>
+			  </div>
+
+			  <div className="how-order-card">
+				<div className="how-order-step">2</div>
+				<h3>Налаштуйте вагу</h3>
+				<p>Додавайте по 50г або 100г та збирайте саме ту вагу, яка вам потрібна.</p>
+			  </div>
+
+			  <div className="how-order-card">
+				<div className="how-order-step">3</div>
+				<h3>Оформіть замовлення</h3>
+				<p>Заповніть форму, а ми підтвердимо замовлення та підготуємо відправку.</p>
+			  </div>
+			</div>
+		  </div>
+		</section>
 
         {loading ? (
           <div className="loading-box">Завантаження каталогу...</div>
@@ -311,7 +363,7 @@ export default function Home() {
           {visible.map((p) => {
             const currentPack = selectedPacks[p.id] || 100;
 			const packPrice = priceForPack(p.price100, currentPack);
-			const inCart = cart.find((i) => i.id === p.id && i.pack === currentPack);
+			const inCart = cart.find((i) => i.id === p.id);
 
             return (
               <article key={p.id} className="product-card">
@@ -357,7 +409,7 @@ export default function Home() {
                   
                   <div className="product-price-main">{packPrice} грн</div>
                   <div className="product-price-sub">
-                    {currentPack}г · {p.price100} грн / 100г
+                    Ціна за 100г: {p.price100} грн / 100г
                   </div>
 
                   <div className="product-actions">
@@ -369,7 +421,7 @@ export default function Home() {
                       −
                     </button>
 
-                    <div className="qty-num">{inCart?.qty || 0}</div>
+                    <div className="qty-num">{inCart?.pack || 0}</div>
 
                     <button
                       onClick={() => add(p)}
@@ -414,8 +466,8 @@ export default function Home() {
 		  
 		  {subtotal > 0 && subtotal < SHOP.delivery.freeFrom ? (
 		    <div className="free-delivery-note">
-			  До безкоштовної доставки залишилось{" "}
-			  <b>{SHOP.delivery.freeFrom - subtotal} грн</b>
+			  Додай ще <b>{SHOP.delivery.freeFrom - subtotal} грн</b>, щоб отримати
+			  безкоштовну доставку Новою поштою
 			</div>
           ) : null}			
 
@@ -431,7 +483,9 @@ export default function Home() {
             </div>
 
             <div className="summary-line">
-              <span>Доставка</span>
+              <span>
+			    Доставка {delivery === 0 ? "(безкоштовно)" : "(Нова пошта)"}
+			  </span>
               <b>{delivery} грн</b>
             </div>
 
@@ -458,6 +512,13 @@ export default function Home() {
           <div className="checkout-grid">
             <input id="name" placeholder="Ім'я" className="checkout-input" />
             <input id="phone" placeholder="Телефон" className="checkout-input" />
+			
+			<input
+			  id="npOffice"
+			  placeholder="Відділення / поштомат Нової Пошти"
+			  className="checkout-input"
+			/>
+			
             <input
               id="address"
               placeholder="Адреса доставки"
@@ -493,26 +554,26 @@ export default function Home() {
 		  <div className="benefits-grid">
 		    <div className="benefit-card">
 			  <div className="benefit-icon">🥜</div>
-			  <h3>Свіжі продукти</h3>
-			  <p>Популярні горіхи та сухофрукти для дому, дітей, спорту та щоденних перекусів.</p>
+			  <h3>Чисті та відбірні горіхи</h3>
+			  <p>Без пилу, сміття. Перевіряємо кожну партію перед відправкою - отримуєш якісний продукт.</p>
 		    </div>
 
 		    <div className="benefit-card">
 			  <div className="benefit-icon">🚚</div>
-			  <h3>Швидка доставка</h3>
-			  <p>Доставка по Україні Нова Пошта. Від 1000 грн — безкоштовно.</p>
+			  <h3>Доставка на наступний день</h3>
+			  <p>Ми якісно збираємо замовлення. Відправка Новою поштою вже наступного дня.</p>
 		    </div>
 
 		    <div className="benefit-card">
 			  <div className="benefit-icon">⚖️</div>
-			  <h3>Зручна фасовка</h3>
-			  <p>Доступні фасовки 100г, 250г, 500г і 1000г — легко замовити потрібний обсяг без зайвих дзвінків.</p>
+			  <h3>Міксуй як хочеш - від 50г</h3>
+			  <p>Обирай будь-які продукти та формуй свою поцію. Без переплат і зайвих залишків.</p>
 		    </div>
 
 		    <div className="benefit-card">
 			  <div className="benefit-icon">💸</div>
-			  <h3>Знижки від суми</h3>
-			  <p>Автоматичні знижки від суми кошика та зрозумілі умови замовлення без складних правил.</p>
+			  <h3>Вигідно брати більше</h3>
+			  <p>Від 800 грн - 5%, від 1000 грн - 10%, від 1500 грн - 15%. Чим більше обираєш - тим приємніша ціна.</p>
 		    </div>
 		  </div>
 	    </div>
@@ -525,15 +586,17 @@ export default function Home() {
 
 		  <div className="info-text">
 		    <p>
-			  <b>Горіховий клуб</b> — це онлайн-магазин свіжих горіхів та сухофруктів у Дніпрі.
-			  Ми зібрали найпопулярніші позиції для щоденного харчування, дитячих перекусів,
-			  домашнього використання та активного способу життя.
+			  	Ми — про натуральність, якість і любов до своєї справи 🌿
+				Наші горіхи та сухофрукти — це не просто товар, а ретельно відібраний продукт, який ми самі обираємо для себе та своїх близьких.
+
+				Ми співпрацюємо тільки з перевіреними постачальниками, щоб ви отримували максимально чистий, свіжий і корисний продукт. Кожну партію ми відбираємо вручну, очищаємо та перевіряємо — без пилу, сміття і випадкових домішок.
+
+				Для нас важливо, щоб їжа була екологічною, натуральною і безпечною.
+				Без компромісів. Без “як вийде”. Тільки найкраще.
+
+				Ми дійсно любимо те, що робимо — і хочемо, щоб ви це відчули з першого замовлення 💛
 		    </p>
 
-		    <p>
-			  Наш підхід простий: зрозумілий каталог, чесна фасовка, швидке оформлення замовлення
-			  та доставка по Україні. Ви обираєте потрібні позиції, а ми оперативно обробляємо замовлення.
-		    </p>
 		  </div>
 	    </div>
 	  </section>
@@ -547,7 +610,7 @@ export default function Home() {
 		    <div className="info-card">
 			  <h3>Доставка</h3>
 			  <ul className="info-list">
-			    <li>Доставка по Україні</li>
+			    <li>Доставка по Україні "Новою поштою"</li>
 			    <li>Вартість доставки — {SHOP.delivery.fee} грн</li>
 			    <li>Безкоштовна доставка від {SHOP.delivery.freeFrom} грн</li>
 			    <li>Після оформлення ми зв’язуємось для підтвердження замовлення</li>
@@ -576,26 +639,44 @@ export default function Home() {
 		    <div className="review-card">
 			  <div className="review-stars">★★★★★</div>
 			  <p>
-			    Замовлення оформили швидко, все зрозуміло і без зайвих дзвінків.
-			    Горіхи свіжі, фасовка зручна.
+			    Замовляли кеш'ю і мігдаль. Сподобалось, що реально чисті без пилу і сміття.
+			    Брав 200 г на пробу, тепер буду брати більше.
 			  </p>
-			  <div className="review-author">Олена, Дніпро</div>
+			  <div className="review-author">Олег, Дніпро</div>
 		    </div>
 
 		    <div className="review-card">
 			  <div className="review-stars">★★★★★</div>
 			  <p>
-			    Сподобалось, що можна одразу побачити ціну за фасовку і суму до оплати.
-			    Доставка приїхала вчасно.
+			    Дуже зручно, що можна міксувати різні позиції.
+			    Замовила потроху всього для дітей, зайшло!
 			  </p>
-			  <div className="review-author">Андрій, Дніпро</div>
+			  <div className="review-author">Іріна, Київ</div>
 		    </div>
-
-		    <div className="review-card">
+            
+			<div className="review-card">
 			  <div className="review-stars">★★★★★</div>
 			  <p>
-			    Брали для дому і для дітей. Сухофрукти нормальної якості, замовлення
-			    підтвердили швидко.
+			    Беру на роботу як перекуси. Немає відчуття "старого", як часто буває.
+			    
+			  </p>
+			  <div className="review-author">Сергій, Харків</div>
+		    </div>
+			
+			<div className="review-card">
+			  <div className="review-stars">★★★★★</div>
+			  <p>
+			    Сподобалось, що одразу видно суму і знижку.
+			    Без сюрпризів при оформленні.
+			  </p>
+			  <div className="review-author">Аріна, Полтав</div>
+		    </div>
+			
+		    <div className="review-card">
+			  <div className="review-stars">★★★★</div>
+			  <p>
+			    Все ок, але доставка не в той же день.
+			    Зате якість норм і все акуратно запаковано.
 			  </p>
 			  <div className="review-author">Марина, Дніпро</div>
 		    </div>
@@ -654,9 +735,11 @@ export default function Home() {
 
 		  <div className="footer-links">
 		    <a href="#catalog">Каталог</a>
-		    <a href="#benefits">Переваги</a>
-		    <a href="#about">Про нас</a>
-		    <a href="#contacts">Контакти</a>
+		    <a href="#how-order">Як замовити</a>
+            <a href="#benefits">Переваги</a>
+            <a href="#about">Про нас</a>
+            <a href="#delivery">Доставка</a>
+            <a href="#contacts">Контакти</a>
 		  </div>
 	    </div>
 	  </footer>
@@ -668,28 +751,34 @@ export default function Home() {
         </div>
 		
 	    <button
-          className="sticky-orderbar-btn"
+          className={`sticky-orderbar-btn ${cart.length === 0 ? "disabled" : ""}`}
+		  disabled={cart.length === 0}
           onClick={() => {
+			if (cart.length === 0) return;
+			
             const el = document.getElementById("summary");
             el?.scrollIntoView({ behavior: "smooth" });
           }}
         >
-          Замовити
+		  {cart.length === 0 ? "Оберіть товари" : "Замовити"}
         </button>
       </div>
 	  
-	  <a href="tel:+380660653477" className="call-btn">
-	    📞
-	  </a>
+	  {showFloating && (
+	    <>
+	      <a href="tel:+380660653477" className="call-btn">
+	        📞
+	      </a>
 
-      <button
-		className="scroll-top-btn"
-		onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-		type="button"
-	  >
-	    ↑
-	  </button>
-	  
+          <button
+		    className="scroll-top-btn"
+		    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+		    type="button"
+	      >
+	        ↑
+	      </button>
+		</>  
+	  )}
     </main>
   );
 }

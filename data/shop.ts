@@ -2,12 +2,12 @@ export const SHOP = {
   city: "Дніпро",
   currency: "грн",
 
-  packs: [100, 250, 500, 1000], // граммы
+  packs: [50, 100], // граммы
 
   delivery: {
     fee: 100,
     freeFrom: 1000,
-    note: "Мінімальний заказ від 400 грн. Від 1000 грн — безкоштовно доставка."
+    note: "Доставка по Україні Новою поштою. Від 1000 грн — безкоштовно доставка."
   },
 
   gift: {
@@ -19,7 +19,7 @@ export const SHOP = {
   discounts: [
     { from: 1500, percent: 15 },
     { from: 1000, percent: 10 },
-    { from: 600, percent: 5 },
+    { from: 800, percent: 5 },
   ],
 
   products: [
