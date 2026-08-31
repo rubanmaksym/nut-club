@@ -12,6 +12,8 @@ type CartItem = {
   price100: number;
   pack: number;
   qty: number;
+  sale_type?: "weight" | "piece";
+  pack_label?: string;
 };
 
 type Product = { 
@@ -21,10 +23,20 @@ type Product = {
   price100: number;
   image: string;
   description?: string;
+  sale_type?: "weight" | "piece";
+  pack_label?: string;
 };
 
 function priceForPack(price100: number, grams: number) {
   return Math.round((price100 * grams) / 100);
+}
+
+function priceForCartItem(item: CartItem) {
+  if (item.sale_type === "piece") {
+    return item.price100 * item.pack;
+  }
+
+  return priceForPack(item.price100, item.pack) * item.qty;
 }
 
 function discountPercent(subtotal: number) {
@@ -78,7 +90,8 @@ export default function Home() {
   }, [products, category]);
 
   function add(product: Product) {
-	const step = selectedPacks[product.id] || 50;
+	const isPiece = product.sale_type === "piece";  
+	const step = isPiece ? 1 : selectedPacks[product.id] || 50;
 	const exist = cart.find((i) => i.id === product.id);
 
 	if (exist) {
@@ -97,15 +110,19 @@ export default function Home() {
 		  price100: product.price100,
 		  pack: step,
 		  qty: 1,
+		  sale_type: product.sale_type,
+		  pack_label: product.pack_label,
 		},
 	  ]);
 	}
   }
 
   function remove(item: CartItem) {
-    const step = selectedPacks[item.id] || 50;
-    const exist = cart.find((i) => i.id === item.id);
-    if (!exist) return;
+    const isPiece = item.sale_type === "piece";
+    const step = isPiece ? 1 : selectedPacks[item.id] || 50;
+	
+	const exist = cart.find((i) => i.id === item.id);
+	if (!exist) return;
 
     if (exist.pack <= step) {
       setCart(cart.filter((i) => i.id !== item.id));
@@ -119,7 +136,7 @@ export default function Home() {
   }
 
   const subtotal = cart.reduce(
-    (s, i) => s + priceForPack(i.price100, i.pack) * i.qty,
+    (s, i) => s + priceForCartItem(i),
     0
   );
 
@@ -361,8 +378,12 @@ export default function Home() {
 
         <section className="catalog-grid">
           {visible.map((p) => {
-            const currentPack = selectedPacks[p.id] || 100;
-			const packPrice = priceForPack(p.price100, currentPack);
+            const isPiece = p.sale_type === "piece";
+			const currentPack = isPiece ? 1 : selectedPacks[p.id] || 100;
+			const packPrice = isPiece
+			  ? p.price100
+			  : priceForPack(p.price100, currentPack);
+			
 			const inCart = cart.find((i) => i.id === p.id);
 
             return (
@@ -386,30 +407,40 @@ export default function Home() {
 				  <div className="product-desc">{p.description}</div>
 				  
 				  <div className="card-packs">
-					{SHOP.packs.map((g) => {
-					  const currentPack = selectedPacks[p.id] || 100;
+				    {isPiece ? (
+					  <div className="card-pack-btn active">
+					    {p.pack_label || "1 шт."}
+					  </div>
+					) : (
+					
+					  {SHOP.packs.map((g) => {
+					    const currentPack = selectedPacks[p.id] || 100;
 
-					  return (
-						<button
-						  key={g}
-						  onClick={() =>
-							setSelectedPacks((prev) => ({
-							  ...prev,
-							  [p.id]: g,
-							}))
-						  }
-						  className={`card-pack-btn ${currentPack === g ? "active" : ""}`}
-						  type="button"
-						>
-						  {g}г
-						</button>
-					  );
-					})}
+					    return (
+						  <button
+						    key={g}
+						    onClick={() =>
+							  setSelectedPacks((prev) => ({
+							    ...prev,
+							    [p.id]: g,
+							  }))
+						    }
+						    className={`card-pack-btn ${currentPack === g ? "active" : ""}`}
+						    type="button"
+						  >
+						    {g}г
+						  </button>
+					    );
+					  })
+					)}  
 				  </div>
                   
                   <div className="product-price-main">{packPrice} грн</div>
                   <div className="product-price-sub">
-                    Ціна за 100г: {p.price100} грн / 100г
+				    {isPiece
+					  ? `Ціна за ${p.pack_label || "1 шт."}: ${p.price100} грн`
+					  : `Ціна за 100г: ${p.price100} грн / 100г`}
+                    
                   </div>
 
                   <div className="product-actions">
@@ -440,7 +471,12 @@ export default function Home() {
         <section className="summary-card" id="summary">
           <div className="summary-head">
             <h2>Кошик</h2>
-            <span>{cart.reduce((s, i) => s + i.qty, 0)} шт.</span>
+            <span>
+			  {cart.reduce(
+			    (s, i) => s + (i.sale_type === "piece" ? i.pack : i.qty),
+			    0
+			  )} шт.
+			</span>  
           </div>
 
           {cart.length === 0 ? (
@@ -452,12 +488,14 @@ export default function Home() {
                   <div>
                     <div className="summary-item-name">{i.name}</div>
                     <div className="summary-item-sub">
-                      {i.pack}г × {i.qty}
+                      {i.sale_type === "piece"
+					    ? `${i.pack} × ${i.pack_label || "1 шт."}`
+						: `${i.pack}г`}
                     </div>
                   </div>
 
                   <div className="summary-item-price">
-                    {priceForPack(i.price100, i.pack) * i.qty} грн
+                    {priceForCartItem(i)} грн
                   </div>
                 </div>
               ))}
