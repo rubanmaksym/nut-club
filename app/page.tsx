@@ -413,7 +413,7 @@ export default function Home() {
 					  </div>
 					) : (
 					
-					  {SHOP.packs.map((g) => {
+					   SHOP.packs.map((g) => {
 					    const currentPack = selectedPacks[p.id] || 100;
 
 					    return (
